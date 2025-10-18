@@ -1,6 +1,6 @@
 ---
 # tasks file for cmn
 
-- name: set correct hostname
-  hostname:
-    name: "lf-{{- env -}}-{{- role -}}01"
+- name: set timezone to Msc
+  timezone:
+    name: Europe/Moscow

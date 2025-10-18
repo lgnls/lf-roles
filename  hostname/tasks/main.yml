@@ -1,0 +1,6 @@
+---
+# tasks file for cmn
+
+- name: set correct hostname
+  hostname:
+    name: "lf-{{- env -}}-{{- role -}}{{ansible_hostname [-2:]}}"
