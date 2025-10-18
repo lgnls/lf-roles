@@ -3,4 +3,47 @@
 
 - name: set timezone to Msc
   timezone:
-    name: Europe/Moscow
+    name: "{{ region }}/{{ city }}"
+
+- name: set correct hostname
+  hostname:
+    name: "{{ inventory_hostname }}"
+
+- name: debugging
+  debug:
+    msg: size is {{ swap_size }}
+
+- block:
+    - name: check swap not exist
+      stat:
+        path: "{{ swap_file }}"
+      register: swap_exists
+
+    - name: allocate swap file
+      shell: "fallocate -l {{ swap_size }} {{ swap_file }}"
+      when: not swap_exists.stat.exists
+
+    - name: fix perms
+      file: 
+        path: "{{ swap_file }}"
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: create swap file
+      shell: mkswap "{{ swap_file }}"
+      when: ansible_facts.swapfree_mb == 0
+
+    - name: enable swap
+      shell: swapon "{{ swap_file }}"
+      when: ansible_facts.swapfree_mb == 0
+
+    - name: add swap to fstab
+      mount:
+        name: None
+        src: "{{ swap_file }}"
+        fstype: swap
+        opts: swap
+        passno: 0
+        dump: 0
+        state: present

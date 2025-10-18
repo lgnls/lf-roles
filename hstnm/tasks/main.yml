@@ -1,6 +1,0 @@
----
-# tasks file for cmn
-
-- name: set correct hostname
-  hostname:
-    name: "{{ inventory_hostname }}"
