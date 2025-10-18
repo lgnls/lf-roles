@@ -3,4 +3,4 @@
 
 - name: set correct hostname
   hostname:
-    name: "lf-{{- env -}}-{{- role -}}{{ansible_hostname [-2:]}}"
+    name: "{{ inventory_hostname }}"
