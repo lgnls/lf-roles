@@ -1,0 +1,31 @@
+---
+- name: "create {{ user }}"
+  user:
+    name: "{{ user }}"
+    password_lock: True
+    state: present
+- name: "add .ssh dir"
+  file:
+    path: "/home/{{ user }}/.ssh"
+    state: directory
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: 0700        
+- name: "add ssh key"
+  copy:
+    src: "{{ key_path }}"
+    dest: "/home/{{ user }}/.ssh/authorized_keys"
+    owner: "{{ user }}"
+    group: "{{ user }}"
+    mode: 0600
+  when: key_path is defined
+- name: "add sudo"
+  lineinfile:
+    path: "/etc/sudoers.d/{{ user }}"
+    create: yes
+    state: present
+    regexp: "^{{ user }} ALL="
+    line: "{{ user }} ALL=(ALL) NOPASSWD: ALL"
+    validate: /usr/sbin/visudo -cf %s
+  when: sudo_user == 'True'
+    

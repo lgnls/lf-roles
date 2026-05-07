@@ -1,42 +1,14 @@
 ---
-- name: "create or delete user"
-  block:
-    - name: "create {{ loop }}"
-      user:
-        name: "{{ loop }}"
-        password_lock: True
-        state: present
-    - name: "add .ssh dir"
-      file:
-        path: "/home/{{ loop }}/.ssh"
-        state: directory
-        owner: "{{ loop }}"
-        group: "{{ loop }}"
-        mode: 0700        
-    - name: "add ssh key"
-      copy:
-        src: "{{ key_path }}"
-        dest: "/home/{{ loop }}/.ssh/authorized_keys"
-        owner: "{{ loop }}"
-        group: "{{ loop }}"
-        mode: 0600
-      when: key_path is defined
-    - name: "add sudo"
-      lineinfile:
-        path: "/etc/sudoers.d/{{ loop }}"
-        create: yes
-        state: present
-        regexp: "^{{ loop }} ALL="
-        line: "{{ loop }} ALL=(ALL) NOPASSWD: ALL"
-        validate: /usr/sbin/visudo -cf %ss
-      when: sudo_user == 'True'
-  loop: "{{ username.split(',') }}"    
+- name: "Create user"
+  include_tasks: "create_user.yml"
+  loop: "{{ username.split(',') }}"
+  loop_control:
+    loop_var: user
   when: user_state == "present"
-  block:
-    - name: "delete user"
-      user:
-        name: "{{ username }}"
-        state: absent
-        remove: True
+- name: "delete user"
+  include_tasks: "delete_user.yml"
+  loop: "{{ username.split(',') }}"
+  loop_control:
+    loop_var: user
   when: user_state == "absent"
-        
+      

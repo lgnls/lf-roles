@@ -1,0 +1,12 @@
+---
+- name: "create {{ user }}"
+  user:
+    name: "{{ user }}"
+    state: absent
+- name: "add .ssh dir"
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "/home/{{ user }}"
+    - "/etc/sudoers.d/{{ user }}"
