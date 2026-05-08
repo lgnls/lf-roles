@@ -4,3 +4,10 @@
   args:
     apply:
       become: yes
+  when: docker_need is defined and docker_need | bool
+- name: install custome packages
+  include_tasks: "install_custom.yml"
+  args:
+    apply:
+      become: yes
+  when: custom_package is defined

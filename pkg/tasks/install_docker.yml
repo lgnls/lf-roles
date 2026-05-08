@@ -14,7 +14,7 @@
     name: "{{ item }}"
     state: present
     update_cache: yes
-  loop: "{{ packages }}"
+  loop: "{{ docker_packages }}"
 
 - name: start and enable docker services
   service:
