@@ -1,9 +1,9 @@
 ---
-- name: "create {{ user }}"
+- name: "delete {{ user }}"
   user:
     name: "{{ user }}"
     state: absent
-- name: "add .ssh dir"
+- name: "delete .ssh and sudoers dirs"
   file:
     path: "{{ item }}"
     state: absent

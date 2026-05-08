@@ -4,6 +4,7 @@
     name: "{{ user }}"
     password_lock: True
     state: present
+    shell: /bin/bash
 - name: "add .ssh dir"
   file:
     path: "/home/{{ user }}/.ssh"
@@ -13,12 +14,13 @@
     mode: 0700        
 - name: "add ssh key"
   copy:
-    src: "{{ key_path }}"
+    src: "/app/infra/roles/usr/files/{{ user }}"
     dest: "/home/{{ user }}/.ssh/authorized_keys"
     owner: "{{ user }}"
     group: "{{ user }}"
     mode: 0600
-  when: key_path is defined
+  when: user_key is defined and item == user
+  loop: "{{ user_key.split(',') }}"
 - name: "add sudo"
   lineinfile:
     path: "/etc/sudoers.d/{{ user }}"
