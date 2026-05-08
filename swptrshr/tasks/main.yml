@@ -10,10 +10,6 @@
   shell: "free -m | grep -i swap | awk '{print $3}'"
   register: swap_usage
 
-- name: debugging
-  debug:
-    msg: "swap_act {{ swap_active.rc }} usage {{ swap_usage.stdout }}"
-
 - block:
   - name: turn off swap
     shell: "swapoff {{ swap_file }}"

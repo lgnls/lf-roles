@@ -1,0 +1,6 @@
+---
+- name: install docker
+  include_tasks: "install_docker.yml"
+  args:
+    apply:
+      become: yes

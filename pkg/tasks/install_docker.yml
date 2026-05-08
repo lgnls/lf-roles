@@ -1,0 +1,31 @@
+---
+- name: add docker repo key
+  get_url:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    dest: /etc/apt/keyrings/docker.asc
+    mode: 644
+
+- name: add docker repo
+  apt_repository:
+    repo: 'deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable'
+
+- name: install docker packages
+  apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop: "{{ packages }}"
+
+- name: start and enable docker services
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: permit localuser to use docker
+  user: 
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  loop: "{{ docker_user.split(',') }}"
+  when: docker_user is defined

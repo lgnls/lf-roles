@@ -9,10 +9,6 @@
   hostname:
     name: "{{ inventory_hostname }}"
 
-- name: debugging
-  debug:
-    msg: size is {{ swap_size }}
-
 - block:
     - name: check swap not exist
       stat:
@@ -47,3 +43,4 @@
         passno: 0
         dump: 0
         state: present
+  when: enable_swap is defined and enable_swap | bool

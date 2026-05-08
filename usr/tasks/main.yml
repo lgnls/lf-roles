@@ -7,7 +7,7 @@
   loop: "{{ username.split(',') }}"
   loop_control:
     loop_var: user
-  when: user_state == "present"
+  when: username is defined and user_state == "present"
 - name: "delete user"
   include_tasks: "delete_user.yml"
   args:
@@ -16,4 +16,4 @@
   loop: "{{ username.split(',') }}"
   loop_control:
     loop_var: user
-  when: user_state == "absent"
+  when: username is defined and user_state == "absent"
