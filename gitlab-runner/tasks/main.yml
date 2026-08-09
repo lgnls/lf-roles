@@ -1,0 +1,43 @@
+---
+- name: "Check Gitlab runner"
+  stat:
+    path: /usr/local/bin/gitlab-runner
+  register: runner_exists
+
+- name: "Runner installation"
+  when: not runner_exists.stat.exists
+  block:
+  - name: "Pull gitlab-runner binary"
+    get_url:
+      url: "https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64"
+      dest: "/usr/local/bin/gitlab-runner"
+      mode: 750
+
+  - name: "Add gitlab-ruunner user"
+    user:
+      name: "gitlab-runner"
+      password_lock: True
+      state: present
+      shell: /bin/bash
+      home: /home/gitlab-runner
+      comment: "GitLab Runner"
+
+  - name: "Install runner"
+    shell: | 
+      /usr/local/bin/gitlab-runner install --user=gitlab-runner --working-directory=/home/gitlab-runner \ 
+      /usr/local/bin/gitlab-runner start \ 
+      /usr/local/bin/gitlab-runner status
+
+- name: "Registrate runner"
+  when: gitlab_token is defined
+  shell: |
+    sudo /usr/local/bin/gitlab-runner register -n \
+        --url https://gitlab.com/ \
+        --registration-token "{{ gitlab_token }}" \
+        --executor {{ gitlab_exec | default('shell') }} \
+        --tag-list {{ inventory_hostname }}-runner-{{- gitlab_exec | default('shell') }} \
+        --description "{{- gitlab_exec | default('shell') }} runner socket" {%- if gitlab_exec | default('shell') == "docker" %} \
+        --docker-image  "docker:latest" \
+        --docker-volumes "/var/run/docker.sock:/var/run/docker.sock" 
+        {%- endif %}
+    /usr/local/bin/gitlab-runner restart

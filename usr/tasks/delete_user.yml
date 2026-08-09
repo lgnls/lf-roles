@@ -3,6 +3,7 @@
   user:
     name: "{{ user }}"
     state: absent
+
 - name: "delete .ssh and sudoers dirs"
   file:
     path: "{{ item }}"

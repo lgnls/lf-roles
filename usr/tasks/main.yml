@@ -1,19 +1,17 @@
 ---
-- name: "Create user"
-  include_tasks: "create_user.yml"
-  args:
-    apply:
-      become: yes
-  loop: "{{ username.split(',') }}"
-  loop_control:
-    loop_var: user
-  when: username is defined and user_state == "present"
-- name: "delete user"
-  include_tasks: "delete_user.yml"
-  args:
-    apply:
-      become: yes
-  loop: "{{ username.split(',') }}"
-  loop_control:
-    loop_var: user
-  when: username is defined and user_state == "absent"
+- name: "Create or delete user"
+  block:
+  - name: "Create user"
+    include_tasks: "create_user.yml"
+    loop: "{{ username.split(',') | trim }}"
+    loop_control:
+      loop_var: user
+    when: username is defined and user_state == "present"
+
+  - name: "delete user"
+    include_tasks: "delete_user.yml"
+    loop: "{{ username.split(',') | trim }}"
+    loop_control:
+      loop_var: user
+    when: username is defined and user_state == "absent"
+  become: yes
