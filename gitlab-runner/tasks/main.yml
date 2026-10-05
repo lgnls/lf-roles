@@ -33,19 +33,28 @@
   when: not runner_exists.stat.exists
   shell: | 
     /usr/local/bin/gitlab-runner install --user=gitlab-runner --working-directory=/home/gitlab-runner \ 
-    /usr/local/bin/gitlab-runner start \ 
+
+- name: "Start runner"
+  when: not runner_exists.stat.exists
+  shell: | 
+    /usr/local/bin/gitlab-runner start
+
+- name: "Show runner status"
+  when: not runner_exists.stat.exists
+  shell: |  
     /usr/local/bin/gitlab-runner status
 
 - name: "Registrate runner"
   when: gitlab_token is defined and gitlab_token not in existed_tokens.stdout.split(',')
+  become: True
   shell: |
-    sudo /usr/local/bin/gitlab-runner register -n \
-        --url https://gitlab.com/ \
-        --registration-token "{{ gitlab_token }}" \
-        --executor {{ gitlab_exec | default('shell') }} \
-        --tag-list {{ inventory_hostname }}-runner-{{- gitlab_exec | default('shell') }} \
-        --description "{{- gitlab_exec | default('shell') }} runner socket" {%- if gitlab_exec | default('shell') == "docker" %} \
-        --docker-image  "docker:latest" \
-        --docker-volumes "/var/run/docker.sock:/var/run/docker.sock" 
-        {%- endif %}
+    /usr/local/bin/gitlab-runner register -n \
+    --url https://gitlab.com/ \
+    --registration-token "{{ gitlab_token }}" \
+    --executor {{ gitlab_exec | default('shell') }} \
+    --tag-list {{ inventory_hostname }}-runner-{{- gitlab_exec | default('shell') }} \
+    --description "{{- gitlab_exec | default('shell') }} runner socket" {%- if gitlab_exec | default('shell') == "docker" %} \
+    --docker-image  "docker:latest" \
+    --docker-volumes "/var/run/docker.sock:/var/run/docker.sock" 
+    {%- endif %}
     /usr/local/bin/gitlab-runner restart
