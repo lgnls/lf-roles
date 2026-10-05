@@ -4,6 +4,12 @@
     path: /usr/local/bin/gitlab-runner
   register: runner_exists
 
+- name: "Discover existed tokens"
+  shell:
+    cmd: |
+      grep 'token =' /etc/gitlab-runner/config.toml | awk -F '"' '{print $2}' | tr '\n' ','
+  register: existed_tokens
+
 - name: "Runner installation"
   when: not runner_exists.stat.exists
   block:
@@ -13,23 +19,25 @@
       dest: "/usr/local/bin/gitlab-runner"
       mode: 750
 
-  - name: "Add gitlab-ruunner user"
-    user:
-      name: "gitlab-runner"
-      password_lock: True
-      state: present
-      shell: /bin/bash
-      home: /home/gitlab-runner
-      comment: "GitLab Runner"
+- name: "Add gitlab-runner user"
+  when: not runner_exists.stat.exists
+  user:
+    name: "gitlab-runner"
+    password_lock: True
+    state: present
+    shell: /bin/bash
+    home: /home/gitlab-runner
+    comment: "GitLab Runner"
 
-  - name: "Install runner"
-    shell: | 
-      /usr/local/bin/gitlab-runner install --user=gitlab-runner --working-directory=/home/gitlab-runner \ 
-      /usr/local/bin/gitlab-runner start \ 
-      /usr/local/bin/gitlab-runner status
+- name: "Install runner"
+  when: not runner_exists.stat.exists
+  shell: | 
+    /usr/local/bin/gitlab-runner install --user=gitlab-runner --working-directory=/home/gitlab-runner \ 
+    /usr/local/bin/gitlab-runner start \ 
+    /usr/local/bin/gitlab-runner status
 
 - name: "Registrate runner"
-  when: gitlab_token is defined
+  when: gitlab_token is defined and gitlab_token not in existed_tokens.stdout.split(',')
   shell: |
     sudo /usr/local/bin/gitlab-runner register -n \
         --url https://gitlab.com/ \
